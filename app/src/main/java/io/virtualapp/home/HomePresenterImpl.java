@@ -47,10 +47,10 @@ class HomePresenterImpl implements HomeContract.HomePresenter {
             mView.showGuide();
             Once.markDone(VCommends.TAG_SHOW_ADD_APP_GUIDE);
         }
-        if (!Once.beenDone(VCommends.TAG_ASK_INSTALL_GMS) && GmsSupport.isOutsideGoogleFrameworkExist()) {
-            mView.askInstallGms();
-            Once.markDone(VCommends.TAG_ASK_INSTALL_GMS);
-        }
+//        if (!Once.beenDone(VCommends.TAG_ASK_INSTALL_GMS) && GmsSupport.isOutsideGoogleFrameworkExist()) {    // delete ask gms  20190416
+//            mView.askInstallGms();
+//            Once.markDone(VCommends.TAG_ASK_INSTALL_GMS);
+//        }
     }
 
     @Override
@@ -128,7 +128,12 @@ class HomePresenterImpl implements HomeContract.HomePresenter {
             if (!multipleVersion) {
                 PackageAppData data = addResult.appData;
                 data.isLoading = true;
-                mView.addAppToLauncher(data);
+                try{                                                                                 // catch exception 20190416
+                    mView.addAppToLauncher(data);
+
+                }catch(java.lang.IndexOutOfBoundsException e){
+
+                }
                 handleOptApp(data, info.packageName, true);
             } else {
                 MultiplePackageAppData data = new MultiplePackageAppData(addResult.appData, addResult.userId);

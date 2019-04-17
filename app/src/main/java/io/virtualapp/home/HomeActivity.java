@@ -5,6 +5,7 @@ import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.View;
@@ -29,6 +31,8 @@ import com.lody.virtual.client.stub.ChooseTypeAndAccountActivity;
 import com.lody.virtual.os.VUserInfo;
 import com.lody.virtual.os.VUserManager;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,14 +91,25 @@ public class HomeActivity extends VActivity implements HomeContract.HomeView {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+
         overridePendingTransition(0, 0);
         super.onCreate(savedInstanceState);
+//        installOnce();
         setContentView(R.layout.activity_home);
         mUiHandler = new Handler(Looper.getMainLooper());
         bindViews();
         initLaunchpad();
         initMenu();
         new HomePresenterImpl(this).start();
+
+        // Toast.makeText(this, "install apks", Toast.LENGTH_SHORT).show();
+        // dataList.add(new AppInfoLite(info.packageName, info.path, info.fastOpen)); // when installing APKs， use this method 20190415
+        // String name = "com.jingdong.app.reader.campus";
+        // String path = "/data/app/com.jingdong.app.reader.campus-4Z9tBJSzU--GSQtcVMBw2A==/base.apk";
+        // boolean fastOpen;
+        // fastOpen = true;
+
+        //new AppInfoLite(name, path, fastOpen); // when installing APKs， use this method 20190415
     }
 
     private void initMenu() {
@@ -163,6 +178,7 @@ public class HomeActivity extends VActivity implements HomeContract.HomeView {
     }
 
     private void initLaunchpad() {
+
         mLauncherView.setHasFixedSize(true);
         StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(3, OrientationHelper.VERTICAL);
         mLauncherView.setLayoutManager(layoutManager);
@@ -177,13 +193,51 @@ public class HomeActivity extends VActivity implements HomeContract.HomeView {
         touchHelper.attachToRecyclerView(mLauncherView);
         mLaunchpadAdapter.setAppClickListener((pos, data) -> {
             if (!data.isLoading()) {
-                if (data instanceof AddAppButton) {
+                if (data instanceof AddAppButton) {                                               // Add App button, don't need any more.
                     onAddAppButtonClick();
                 }
-                mLaunchpadAdapter.notifyItemChanged(pos);
+                mLaunchpadAdapter.notifyItemChanged(pos);                                           // 20190416 open APP.
                 mPresenter.launchApp(data);
             }
         });
+
+
+    }
+
+    private void installOnce(){
+        SharedPreferences pref = getSharedPreferences("data", MODE_PRIVATE);
+        String isInstalled = pref.getString("install","");
+        if ( isInstalled.equals("")){
+            SharedPreferences.Editor editor = getSharedPreferences("data", MODE_PRIVATE).edit();
+            editor.putString("install", "yes");
+            editor.apply();                                                                         // don't omit
+            onAddAppButtonClick();
+        }else{
+            Toast.makeText(this, "enjoy apks", Toast.LENGTH_SHORT).show();
+
+        }
+        // todo check once                                                                          // 20190416 install app in asserts/apks
+//        try{
+//
+//            InputStream is = getAssets().open("installed");
+//            int length = is.available();
+//
+//            byte[]  buffer = new byte[length];
+//            is.read(buffer);
+//
+//
+//            String result = new String(buffer, "utf8");
+//
+//            if (result.equals("no")){
+//                onAddAppButtonClick();
+//                // deleteFile("./asserts/installed");
+//
+//            }
+//
+//
+//        }catch (IOException ie){
+//            ie.printStackTrace();
+//        }
     }
 
     private void onAddAppButtonClick() {
@@ -264,7 +318,7 @@ public class HomeActivity extends VActivity implements HomeContract.HomeView {
 
     @Override
     public void loadFinish(List<AppData> list) {
-        list.add(new AddAppButton(this));
+        list.add(new AddAppButton(this));                                                   // delete add_button 20190416 0417
         mLaunchpadAdapter.setList(list);
         hideLoading();
     }
