@@ -18,4 +18,6 @@ VirtualApp 9.0适配\
 1. 原先安装apk时的调用链：ListAppActivity->ListAppFragement->onViewCreated->mInstallButton.setOnClickListener()->dataList.add()。
 2. 原先的修改方式是在HomeActivity的initLaunchpad方法中调用dataList.add()。但是，这种实现只能安装好apk，HomeActivity的View没有刷新，重新启动virtual APP才可以看见其中安装的apk。调试了很久还是不解决，于是只好恢复add_app这个button，在里面实现安装逻辑。
 3. 如果需要安装新的apk，需要：1）复制apk到asserts/目录下 2）增加ListAppFragement中的dataList.add()方法，指定apk package name和复制之后的path即可。
+
+
 2019.04.18 (spend about 5 days)
