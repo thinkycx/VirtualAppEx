@@ -1,6 +1,7 @@
 package io.virtualapp.home;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -15,6 +16,9 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -115,12 +119,6 @@ public class ListAppFragment extends VFragment<ListAppContract.ListAppPresenter>
                 dataList.add(new AppInfoLite(info.packageName, info.path, info.fastOpen)); // when installing APKs， use this method 20190415
             }
 
-//            String name = "com.jingdong.app.reader.campus";
-//            String path = "/data/local/tmp/jd.apk";
-//            boolean fastOpen;
-//            fastOpen = true;
-//            dataList.add(new AppInfoLite(name, path, fastOpen));
-
 
             Intent data = new Intent();
             data.putParcelableArrayListExtra(VCommends.EXTRA_APP_INFO_LIST, dataList);
@@ -162,17 +160,12 @@ public class ListAppFragment extends VFragment<ListAppContract.ListAppPresenter>
             mInstallButton.setEnabled(count > 0);
             mInstallButton.setText(String.format(Locale.ENGLISH, getResources().getString(R.string.install_d), count));
         });
-        //        mInstallButton.setOnClickListener(v -> {
-//            Integer[] selectedIndices = mAdapter.getSelectedIndices();
-//        List<AppInfo> appInfoList = mAdapter.getList();
+
         Integer[] selectedIndices = mAdapter.getSelectedIndices();
 
         ArrayList<AppInfoLite> dataList = new ArrayList<AppInfoLite>(selectedIndices.length);
-//            for (int index : selectedIndices) {
-//                AppInfo info = mAdapter.getItem(index);
 
-        // dataList.add(new AppInfoLite(info.packageName, info.path, info.fastOpen));
-        //      when installing APKs， use this method 20190415
+        //20190415 use SharedPreferences to install only once.
 
         SharedPreferences pref = getContext().getSharedPreferences("data", MODE_PRIVATE);
         String isInstalled = pref.getString("install","");
@@ -182,19 +175,47 @@ public class ListAppFragment extends VFragment<ListAppContract.ListAppPresenter>
             editor.apply();                                                                         // don't omit
 
             String name = "com.jingdong.app.reader.campus";
-            String path = "/data/local/tmp/jd.apk";
+            String path = copyAssetsFile2Phone(getActivity(), "jd.apk");                   // /data/data/io.virtualapp.ex/files
             boolean fastOpen;
             fastOpen = true;
-            dataList.add(new AppInfoLite(name, path, fastOpen));                                        // when installing APKs， use this method 20190415
+            dataList.add(new AppInfoLite(name, path, fastOpen));                                    // when installing APKs， use this method 20190415
 
         }
-//            }
         Intent data = new Intent();
         data.putParcelableArrayListExtra(VCommends.EXTRA_APP_INFO_LIST, dataList);
         getActivity().setResult(Activity.RESULT_OK, data);
         getActivity().finish();
-//        });
         // new ListAppPresenterImpl(getActivity(), this, getSelectFrom()).start();
+    }
+
+
+    // 20190418
+    public static String copyAssetsFile2Phone(Activity activity, String fileName){
+        /*
+        * fileName should only be a file without a folder and separator in Android asserts, such as: 'jd.apk'
+        * copy the fileName into the /data/data/<package name>/files/ folder
+        * */
+        String path = activity.getFilesDir().getAbsolutePath() + File.separator + fileName;
+        try {
+            InputStream inputStream = activity.getAssets().open(fileName);
+            //getFilesDir() 获得当前APP的安装路径 /data/data/包名/files 目录
+            File file = new File(path);
+            if(!file.exists() || file.length()==0) {
+                FileOutputStream fos =new FileOutputStream(file);//如果文件不存在，FileOutputStream会自动创建文件
+                int len=-1;
+                byte[] buffer = new byte[1024];
+                while ((len=inputStream.read(buffer))!=-1){
+                    fos.write(buffer,0,len);
+                }
+                fos.flush();//刷新缓存区
+                inputStream.close();
+                fos.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            path = "";
+        }
+        return path;
     }
 
 
