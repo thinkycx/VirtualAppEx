@@ -193,7 +193,7 @@ public class HomeActivity extends VActivity implements HomeContract.HomeView {
         touchHelper.attachToRecyclerView(mLauncherView);
         mLaunchpadAdapter.setAppClickListener((pos, data) -> {
             if (!data.isLoading()) {
-                if (data instanceof AddAppButton) {                                               // Add App button, don't need any more.
+                if (data instanceof AddAppButton) {                                                 // Add App button
                     onAddAppButtonClick();
                 }
                 mLaunchpadAdapter.notifyItemChanged(pos);                                           // 20190416 open APP.
@@ -204,41 +204,6 @@ public class HomeActivity extends VActivity implements HomeContract.HomeView {
 
     }
 
-    private void installOnce(){
-        SharedPreferences pref = getSharedPreferences("data", MODE_PRIVATE);
-        String isInstalled = pref.getString("install","");
-        if ( isInstalled.equals("")){
-            SharedPreferences.Editor editor = getSharedPreferences("data", MODE_PRIVATE).edit();
-            editor.putString("install", "yes");
-            editor.apply();                                                                         // don't omit
-            onAddAppButtonClick();
-        }else{
-            Toast.makeText(this, "enjoy apks", Toast.LENGTH_SHORT).show();
-
-        }
-        // todo check once                                                                          // 20190416 install app in asserts/apks
-//        try{
-//
-//            InputStream is = getAssets().open("installed");
-//            int length = is.available();
-//
-//            byte[]  buffer = new byte[length];
-//            is.read(buffer);
-//
-//
-//            String result = new String(buffer, "utf8");
-//
-//            if (result.equals("no")){
-//                onAddAppButtonClick();
-//                // deleteFile("./asserts/installed");
-//
-//            }
-//
-//
-//        }catch (IOException ie){
-//            ie.printStackTrace();
-//        }
-    }
 
     private void onAddAppButtonClick() {
         ListAppActivity.gotoListApp(this);

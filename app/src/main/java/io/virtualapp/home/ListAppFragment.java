@@ -166,7 +166,6 @@ public class ListAppFragment extends VFragment<ListAppContract.ListAppPresenter>
         ArrayList<AppInfoLite> dataList = new ArrayList<AppInfoLite>(selectedIndices.length);
 
         //20190415 use SharedPreferences to install only once.
-
         SharedPreferences pref = getContext().getSharedPreferences("data", MODE_PRIVATE);
         String isInstalled = pref.getString("install","");
         if ( isInstalled.equals("")){
